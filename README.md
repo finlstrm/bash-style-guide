@@ -7,24 +7,22 @@ on [this wiki](http://mywiki.wooledge.org), specifically this page:
 
 http://mywiki.wooledge.org/BashGuide/Practices
 
-If anything is not mentioned explicitly in this guide, it defaults to matching
-whatever is outlined in the wiki.
+If anything is not mentioned explicitly in this guide, keep in mind that it is
+a living document - and will be added to and/or changed at any time
 
 Fork this style guide on GitHub https://github.com/bahamas10/bash-style-guide
 
 Preface
 -------
 
-I wrote this guide originally for a project I had worked on called
-[Basher](https://github.com/bahamas10/basher).  The idea was to make a program
-like [Puppet](https://puppet.com/) or [Chef](https://www.chef.io/) but using
-nothing but Bash - simple scripts that could do automation tasks instead of
-complex ruby scripts or whatever else is used by existing configuration
-management software.
-
-Basher was fun to write, and for what it does it works pretty well.  As part of
-writing it I also wrote this style guide to show 1. how I write bash and 2. how
-bash can be safe and predictable if written carefully.
+I'm adopting this style guide for my own bash coding, it has been forked
+from [bahamas10/bash-style-guide](https://github.com/bahamas10/bash-style-guide).
+Most of it has remained unchanged, and the wikilinks are very informative. Over
+time I'll update this really bring it into my own, really this will be a starting
+point for my own style. I'll be the first to admit that not all of my code
+comforms to this style guide, but over time I'll fix that. If you are like minded
+and would like to contribute to this guide, feel free to submit a pull request to
+my fork at [finlstrm/bash-style-guide](https://github.com/finlstrm/bash-style-guide).
 
 This guide will try to be as objective as possible, providing reasoning for why
 certain decisions were made.  For choices that are purely aesthetic (and may
@@ -36,7 +34,10 @@ Aesthetics
 
 ### Tabs / Spaces
 
-tabs.
+spaces, 3
+
+Not all editors create/read tabs equally, thus spaces shall be used. I
+personally like 3 of them
 
 ### Columns
 
@@ -57,9 +58,6 @@ name='dave'
 echo "hello $name"
 ```
 
-The exception to this rule is outlined in the `Block Statements` section below.
-Namely, semicolons should be used for control statements like `if` or `while`.
-
 ### Functions
 
 Don't use the `function` keyword.  All variables created in a function should
@@ -68,42 +66,49 @@ be made local.
 ``` bash
 # wrong
 function foo {
-    i=foo # this is now global, wrong depending on intent
+   i=foo # this is now global, wrong depending on intent
 }
 
 # right
 foo() {
-    local i=foo # this is local, preferred
+   local i=foo # this is local, preferred
 }
 ```
 
 ### Block Statements
 
-`then` should be on the same line as `if`, and `do` should be on the same line
-as `while`.
+`then` should be on line below `if`, and `do` should be on the line below
+`while`.
 
 ``` bash
 # wrong
-if true
-then
-    ...
+if true; then
+   ...
 fi
 
 # also wrong, though admittedly looks kinda cool
 true && {
-    ...
+   ...
 }
 
 # right
-if true; then
-    ...
+if true
+then
+   ...
 fi
 ```
+
+IMHO, this style of block statements is much easier to read.
 
 ### Spacing
 
 No more than 2 consecutive newline characters (ie. no more than 1 blank line in
 a row)
+
+### Whitespace
+
+No unessarry whitespace (spaces) shall exist between blocks of code or at the end
+of lines.
 
 ### Comments
 
@@ -141,23 +146,27 @@ Use bash builtins for generating sequences
 n=10
 
 # wrong
-for f in $(seq 1 5); do
-    ...
+for f in $(seq 1 5)
+do
+   ...
 done
 
 # wrong
-for f in $(seq 1 "$n"); do
-    ...
+for f in $(seq 1 "${n}")
+do
+   ...
 done
 
 # right
-for f in {1..5}; do
-    ...
+for f in {1..5}
+do
+   ...
 done
 
 # right
-for ((i = 0; i < n; i++)); do
-    ...
+for ((i = 0; i < n; i++))
+do
+   ...
 done
 ```
 
@@ -167,7 +176,7 @@ Use `$(...)` for command substitution.
 
 ``` bash
 foo=`date`  # wrong
-foo=$(date) # right
+foo="$(date)" # right
 ```
 
 ### Math / Integer Manipulation
@@ -175,17 +184,19 @@ foo=$(date) # right
 Use `((...))` and `$((...))`.
 
 ``` bash
-a=5
-b=4
+a='5'
+b='4'
 
 # wrong
-if [[ $a -gt $b ]]; then
-    ...
+if [[ ${a} -gt ${b} ]]
+then
+   ...
 fi
 
 # right
-if ((a > b)); then
-    ...
+if ((a > b))
+then
+   ...
 fi
 ```
 
@@ -202,7 +213,7 @@ name='bahamas10'
 
 # wrong
 prog=$(basename "$0")
-nonumbers=$(echo "$name" | sed -e 's/[0-9]//g')
+nonumbers=$(echo "${name}" | sed -e 's/[0-9]//g')
 
 # right
 prog=${0##*/}
@@ -216,13 +227,15 @@ bash builtin functions to loop files
 
 ``` bash
 # very wrong, potentially unsafe
-for f in $(ls); do
-    ...
+for f in $(ls)
+do
+   ...
 done
 
 # right
-for f in *; do
-    ...
+for f in *
+do
+   ...
 done
 ```
 
@@ -245,14 +258,16 @@ etc.) whenever possible
 ``` bash
 # wrong
 modules='json httpserver jshint'
-for module in $modules; do
-    npm install -g "$module"
+for module in ${modules}
+do
+   npm install -g "$module"
 done
 
 # right
 modules=(json httpserver jshint)
-for module in "${modules[@]}"; do
-    npm install -g "$module"
+for module in "${modules[@]}"
+do
+   npm install -g "$module"
 done
 ```
 
@@ -276,7 +291,7 @@ Example
 fqdn='computer1.daveeddy.com'
 
 IFS=. read -r hostname domain tld <<< "$fqdn"
-echo "$hostname is in $domain.$tld"
+echo "$hostname is in ${domain}.${tld}"
 # => "computer1 is in daveeddy.com"
 ```
 
@@ -330,7 +345,7 @@ bar="You are $USER"
 foo="hello world"
 
 # possibly wrong, depending on intent
-bar='You are $USER'
+bar='You are ${USER}'
 ```
 
 All variables that will undergo word-splitting *must* be quoted (1).  If no
@@ -339,13 +354,12 @@ splitting will happen, the variable may remain unquoted.
 ``` bash
 foo='hello world'
 
-if [[ -n $foo ]]; then   # no quotes needed:
-                         # [[ ... ]] won't word-split variable expansions
-
-    echo "$foo"          # quotes needed
+if [[ -n ${foo} ]]      # no quotes needed:
+then                    # [[ ... ]] won't word-split variable expansions
+   echo "${foo}"        # quotes needed
 fi
 
-bar=$foo  # no quotes needed - variable assignment doesn't word-split
+bar=${foo}  # no quotes needed - variable assignment doesn't word-split
 ```
 
 1. The only exception to this rule is if the code or bash controls the variable
@@ -354,16 +368,18 @@ for the duration of its lifetime.  For instance,
 
 ``` bash
 printf_date_supported=false
-if printf '%()T' &>/dev/null; then
-    printf_date_supported=true
+if printf '%()T' &>/dev/null
+then
+   printf_date_supported=true
 fi
 
-if $printf_date_supported; then
-    ...
+if ${printf_date_supported}
+then
+   ...
 fi
 ```
 
-Even though `$printf_date_supported` undergoes word-splitting in the `if`
+Even though `${printf_date_supported}` undergoes word-splitting in the `if`
 statement in that example, quotes are not used because the contents of that
 variable are controlled explicitly by the programmer and not taken from a user
 or command.
@@ -438,14 +454,15 @@ Never.
 Common Mistakes
 ---------------
 
-### Using {} instead of quotes.
+### Missing Quotes.
 
-Using `${f}` is potentially different than `"$f"` because of how word-splitting
+Using `${f}` is potentially different than `"${f}"` because of how word-splitting
 is performed.  For example.
 
 ``` bash
-for f in '1 space' '2  spaces' '3   spaces'; do
-    echo ${f}
+for f in '1 space' '2  spaces' '3   spaces'
+do
+   echo ${f}
 done
 ```
 
@@ -473,8 +490,9 @@ to the `echo` command in all 3 invocations.
 If the variable was quoted instead:
 
 ``` bash
-for f in '1 space' '2  spaces' '3   spaces'; do
-    echo "$f"
+for f in '1 space' '2  spaces' '3   spaces'
+do
+   echo "${f}"
 done
 ```
 
@@ -486,18 +504,18 @@ yields
 3   spaces
 ```
 
-The variable `$f` is expanded but doesn't get split at all by bash, so it is
+The variable `${f}` is expanded but doesn't get split at all by bash, so it is
 passed as a single string (with spaces) to the `echo` command in all 3
 invocations.
 
 Note that, for the most part `$f` is the same as `${f}` and `"$f"` is the same
-as `"${f}"`.  The curly braces should only be used to ensure the variable name
+as `"${f}"`.  The curly braces should always be used to ensure the variable name
 is expanded properly.  For example:
 
 ``` bash
 $ echo "$HOME is $USERs home directory"
 /home/dave is  home directory
-$ echo "$HOME is ${USER}s home directory"
+$ echo "${HOME} is ${USER}s home directory"
 /home/dave is daves home directory
 ```
 
@@ -511,8 +529,9 @@ separated data is best left to a `while read -r ...` loop.
 
 ``` bash
 users=$(awk -F: '{print $1}' /etc/passwd)
-for user in $users; do
-    echo "user is $user"
+for user in ${users}
+do
+   echo "user is ${user}"
 done
 ```
 
@@ -527,15 +546,16 @@ contain spaces or tabs.
 streaming fashion.
 2. If the first field of that file contained spaces or tabs, the for loop would
 break on that as well as newlines
-3. This only works *because* `$users` is unquoted in the `for` loop - if
+3. This only works *because* `${users}` is unquoted in the `for` loop - if
 variable expansion only works for your purposes while unquoted this is a good
 sign that something isn't implemented correctly.
 
 To rewrite this:
 
 ``` bash
-while IFS=: read -r user _; do
-    echo "$user is user"
+while IFS=: read -r user _
+do
+   echo "${user} is user"
 done < /etc/passwd
 ```
 
